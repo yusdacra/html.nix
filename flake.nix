@@ -19,6 +19,8 @@
         });
       };
 
-      example = import ./example.nix tags;
+      examples = {
+        tags = import ./examples/tags.nix tags;
+      };
     };
 }
