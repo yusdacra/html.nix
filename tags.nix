@@ -1,5 +1,7 @@
-{ format ? false, lib ? import ./lib.nix }:
-with lib; let
+{ format ? false, lib }:
+let
+  inherit (lib) concatStrings mapAttrsToList genAttrs isAttrs isList;
+
   fmt = if format then "\n  " else "";
 
   evalAttrs = attrs: concatStrings (mapAttrsToList (name: value: " ${name}=\"${value}\"") attrs);
@@ -9,7 +11,7 @@ with lib; let
     then (children: "<${name}${evalAttrs maybeAttrs}>${fmt}${evalChildren children}${fmt}</${name}>")
     else tag name { } maybeAttrs;
 
-  tags = (genAttrs tag [ "html" "head" "body" "div" "p" "a" ]);
+  tags = (genAttrs [ "html" "head" "body" "div" "p" "a" ] tag);
 in
 tags // {
   inherit tag;

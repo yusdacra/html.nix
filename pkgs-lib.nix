@@ -1,4 +1,4 @@
-{ lib ? import ./lib.nix, pkgs }:
+{ lib, pkgs }:
 let pkgBin = name: "${pkgs.${name}}/bin/${name}"; in
 {
   mkServePathScript = path: pkgs.writeScriptBin "serve" { } ''

@@ -1,26 +1,24 @@
 {
-  inputs = { };
+  inputs = {
+    nixpkgsLib.url = "github:divnix/nixpkgs.lib";
+  };
 
-  outputs = { self }:
+  outputs = { self, nixpkgsLib }:
     let
-      tagsPath = ./tags.nix;
-      libPath = ./lib.nix;
-      pkgsLibPath = ./pkgs-lib.nix;
-
-      lib = import libPath;
+      lib = nixpkgsLib.lib;
+      tags = import ./tags.nix { format = true; inherit lib; };
     in
     {
       lib = {
-        inherit tagsPath libPath pkgsLibPath;
-
-        tags = import tagsPath { format = true; inherit lib; };
-        core = lib;
+        inherit tags;
       };
 
       overlays = {
         pkgsLib = (final: prev: {
-          htmlNix = import pkgsLibPath { inherit lib; pkgs = prev; };
+          htmlNix = import ./pkgs-lib.nix { inherit lib; pkgs = prev; };
         });
       };
+
+      example = import ./example.nix tags;
     };
 }
