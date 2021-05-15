@@ -8,12 +8,16 @@ let
     if isAttrs maybeAttrs
     then (children: "<${name}${evalAttrs maybeAttrs}>\n  ${evalChildren children}\n</${name}>\n")
     else tag name { } maybeAttrs;
+  noChildrenTag = name: attrs: "<${name} ${evalAttrs attrs}>";
 
-  tagsToGen = [ "html" "head" "body" "div" "p" "a" "title" "meta" "code" "pre" "link" ] ++ (map (n: "h${toString n}") (range 1 6));
+  tagsToGen = [ "html" "head" "body" "div" "p" "a" "title" "code" "pre" ] ++ (map (n: "h${toString n}") (range 1 6));
   tags = genAttrs tag tagsToGen;
+
+  noChildrenTagsToGen = [ "link" "meta" ];
+  noChildrenTags = genAttrs noChildrenTag noChildrenTagsToGen;
 in
-tags // {
+tags // noChildrenTags // {
   inherit tag;
   mkLink = url: tags.a { href = url; };
-  mkStylesheet = url: "<link rel=\"stylesheet\" href=\"${url}\">";
+  mkStylesheet = url: noChildrenTags.link { rel = "stylesheet"; href = url; };
 }
