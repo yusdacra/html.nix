@@ -1,33 +1,49 @@
 {
-  outputs = { self }:
-    let
-      utils = import ./utils.nix;
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flakeUtils.url = "github:numtide/flake-utils";
+  };
 
-      lib = {
-        tags = import ./tags.nix { inherit utils; };
+  outputs = { self, flakeUtils, nixpkgs }:
+    flakeUtils.lib.eachDefaultSystem (system:
+      let
+        utils = import ./utils.nix;
 
-        templaters = {
-          basic = import ./templaters/basic.nix;
+        lib = {
+          tags = import ./tags.nix { inherit utils; };
+
+          templaters = {
+            basic = import ./templaters/basic.nix;
+          };
         };
-      };
 
-      pkgsLib = (final: prev: {
-        htmlNix = import ./pkgs-lib.nix { pkgs = prev; utils = utils // { inherit (lib) tags; }; };
+        pkgsLib = (final: prev: {
+          htmlNix = import ./pkgs-lib.nix { pkgs = prev; utils = utils // { inherit (lib) tags; }; };
+        });
+
+        pkgs = import nixpkgs { inherit system; overlays = [ pkgsLib ]; };
+      in
+      {
+        inherit lib;
+
+        overlays = {
+          inherit pkgsLib;
+        };
+
+        apps = with flakeUtils.lib; {
+          site = mkApp {
+            drv = let inherit (pkgs) htmlNix; in
+              htmlNix.mkServeFromSite (htmlNix.mkSiteFrom { src = ./examples/site; templater = lib.templaters.basic; });
+            name = "serve";
+          };
+          basicServe = mkApp {
+            drv = import ./examples/serve.nix { inherit (lib) tags; inherit pkgs; };
+            name = "serve";
+          };
+        };
+
+        examples = {
+          tags = import ./examples/tags.nix lib.tags;
+        };
       });
-    in
-    {
-      inherit lib;
-
-      overlays = {
-        inherit pkgsLib;
-      };
-
-      examples = {
-        siteServe =
-          let inherit (import <nixpkgs> { overlays = [ pkgsLib ]; }) htmlNix; in
-          htmlNix.mkServeFromSite (htmlNix.mkSiteFrom { src = ./examples/site; templater = lib.templaters.basic; }); # needs --impure
-        tags = import ./examples/tags.nix lib.tags;
-        serve = import ./examples/serve.nix { inherit (lib) tags; inherit pkgsLib; }; # needs --impure
-      };
-    };
 }

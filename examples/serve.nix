@@ -1,4 +1,4 @@
-{ tags, pkgsLib, pkgs ? import <nixpkgs> { overlays = [ pkgsLib ]; } }:
+{ tags, pkgs }:
 with pkgs.htmlNix;
 let
   index = with tags;
