@@ -1,2 +1,5 @@
 title = "test site"
-about = "Simple test site"
+
+[pages]
+about = "about.html"
+test = "404.html"

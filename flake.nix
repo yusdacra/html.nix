@@ -24,7 +24,9 @@
         pkgs = import nixpkgs { inherit system; overlays = [ pkgsLib ]; };
       in
       {
-        inherit lib;
+        lib = lib // {
+          pkgsLib = import ./pkgs-lib.nix { inherit pkgs; utils = utils // { inherit (lib) tags; }; };
+        };
 
         overlays = {
           inherit pkgsLib;
