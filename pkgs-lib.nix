@@ -53,5 +53,5 @@ in
         posts = postsRendered;
       };
     in
-    templater context;
+    (templater context).site;
 }

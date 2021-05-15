@@ -11,6 +11,7 @@
 
         lib = {
           tags = import ./tags.nix { inherit utils; };
+          css = import ./css.nix { inherit utils; };
 
           templaters = {
             basic = import ./templaters/basic.nix;
@@ -18,14 +19,14 @@
         };
 
         pkgsLib = (final: prev: {
-          htmlNix = import ./pkgs-lib.nix { pkgs = prev; utils = utils // { inherit (lib) tags; }; };
+          htmlNix = import ./pkgs-lib.nix { pkgs = prev; utils = utils // { inherit (lib) tags css; }; };
         });
 
         pkgs = import nixpkgs { inherit system; overlays = [ pkgsLib ]; };
       in
       {
         lib = lib // {
-          pkgsLib = import ./pkgs-lib.nix { inherit pkgs; utils = utils // { inherit (lib) tags; }; };
+          pkgsLib = import ./pkgs-lib.nix { inherit pkgs; utils = utils // { inherit (lib) tags css; }; };
         };
 
         overlays = {
@@ -34,8 +35,7 @@
 
         apps = with flakeUtils.lib; {
           site = mkApp {
-            drv = let inherit (pkgs) htmlNix; in
-              htmlNix.mkServeFromSite (htmlNix.mkSiteFrom { src = ./examples/site; templater = lib.templaters.basic; });
+            drv = import ./examples/site.nix { inherit lib pkgs; };
             name = "serve";
           };
           basicServe = mkApp {

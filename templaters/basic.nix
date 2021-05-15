@@ -3,7 +3,7 @@ let
   inherit (utils) readFile mapAttrsToList tags fetchGit map;
   inherit (pkgs.lib) flatten optional length;
 
-  stylesheets = map tags.mkStylesheet [ "https://unpkg.com/purecss@2.0.6/build/pure-min.css" "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css" "css/mine.css" ];
+  stylesheets = map tags.mkStylesheet [ "https://unpkg.com/purecss@2.0.6/build/pure-min.css" "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css" "mine.css" ];
 
   renderPost = name: value: with tags; article [
     (a { href = "#${name}"; class = "postheader"; } (h3 { id = name; } ("## " + name)))
@@ -15,9 +15,9 @@ let
       (name: relPath: tags.div { class = "pure-u-1"; } (tags.a { href = "./${relPath}"; class = "postheader"; } name))
       (config.pages or { });
 
-  postsSection = with tags; div { class = "posts"; } ([
+  postsSectionContent = with tags; [
     (a { href = "#posts"; class = "postheader"; } (h1 "# posts"))
-  ] ++ allPosts);
+  ] ++ allPosts;
 
   sidebarSection = optional ((length pages) > 0) (
     with tags; nav { class = "sidebar"; } ([
@@ -25,59 +25,68 @@ let
       (div { class = "pure-g"; } pages)
     ])
   );
-in
-{
-  "index.html" = with tags;
+
+  mkPage = content: with tags;
     html [
       (head (stylesheets ++ [
         (title config.title)
         (meta { name = "viewport"; content = "width=device-width, initial-scale=1"; })
       ]))
-      (body (sidebarSection ++ [ postsSection ]))
+      (body (sidebarSection ++ [ (div { class = "content"; } content) ]))
     ];
 
-  css = {
-    "mine.css" = ''
-      body {
-        font-family: "Raleway", "HelveticaNeue", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      }
-      code {
-        font-family: "Iosevka Term", "Iosevka", monospace;
-        background: #000000cc;
-        color: #eeeeee;
-      }
-      a.postheader,a.postheader:hover {
-        color: inherit;
-        text-decoration: none;
-      }
-      a.postheader:hover {
-        text-decoration: underline;
-      }
-      div.posts {
-        margin-top: 5%;
-        margin-bottom: 5%;
-        margin-left: 20%;
-        margin-right: 10%;
-      }
-      nav.sidebar {
-        position: fixed;
-        top: 0;
-        margin-left: 3%;
-        z-index: 1000;
-      }
-      @media (max-width: 48em) {
-          nav.sidebar {
-            position: relative;
-            margin-top: 5%;
-            margin-left: 0;
-            margin-right: 0;
-          }
-          div.posts {
-            margin-top: 0;
-            margin-left: 0;
-            margin-right: 0;
-          }
-      }
-    '';
+  stylesheet =
+    with utils.css;
+    css [
+      (css {
+        body = {
+          font-family = [ "Raleway" "Helvetica" "Arial" "sans-serif" ];
+        };
+        code = {
+          font-family = [ "Iosevka Term" "Iosevka" "monospace" ];
+          background = "#000000cc";
+          color = "#eeeeee";
+        };
+        "a.postheader,a.postheader:hover" = {
+          color = "inherit";
+          text-decoration = "none";
+        };
+        "a.postheader:hover" = {
+          text-decoration = "underline";
+        };
+        "div.content" = {
+          margin-top = "5%";
+          margin-bottom = "5%";
+          margin-left = "20%";
+          margin-right = "10%";
+        };
+        "nav.sidebar" = {
+          position = "fixed";
+          top = 0;
+          margin-left = "3%";
+          z-index = 1000;
+        };
+      })
+      (media "max-width: 48em" {
+        "nav.sidebar" = {
+          position = "relative";
+          margin-top = "5%";
+          margin-left = "3%";
+          margin-right = "3%";
+        };
+        "div.content" = {
+          margin-top = 0;
+          margin-left = "3%";
+          margin-right = "3%";
+        };
+      })
+    ];
+in
+{
+  inherit stylesheets sidebarSection mkPage stylesheet;
+
+  site = {
+    "index.html" = mkPage postsSectionContent;
+    "mine.css" = stylesheet;
   };
 }

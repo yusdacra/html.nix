@@ -1,4 +1,4 @@
-HTML utilities and SSG in Nix. Checkout [examples](./examples).
+CSS, HTML utilities and SSG in Nix. Checkout [examples](./examples).
 
 ## Examples
 
