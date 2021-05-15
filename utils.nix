@@ -1,5 +1,5 @@
 let
-  inherit (builtins) isAttrs isList map any concatMap concatStringsSep listToAttrs;
+  inherit (builtins) isAttrs isList map any concatMap concatStringsSep listToAttrs genList;
 
   mapAttrsToList = f: attrs: map (name: f name attrs.${name}) (builtins.attrNames attrs);
 in
@@ -27,4 +27,10 @@ in
 
   concatStrings = concatStringsSep "";
   genAttrs = f: names: listToAttrs (map (n: { name = n; value = (f n); }) names);
+
+  range = first: last:
+    if first > last then
+      [ ]
+    else
+      genList (n: first + n) (last - first + 1);
 } // builtins
