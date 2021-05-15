@@ -5,7 +5,7 @@ let
     html [
       (body [
         (p "Hello world!")
-        (link "./ex.html" "say bye")
+        (mkLink "./ex.html" "say bye")
       ])
     ];
 
@@ -13,7 +13,7 @@ let
     html [
       (body [
         (p "Bye world!")
-        (link "./index.html" "go back")
+        (mkLink "./index.html" "go back")
       ])
     ];
 

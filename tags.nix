@@ -9,10 +9,11 @@ let
     then (children: "<${name}${evalAttrs maybeAttrs}>\n  ${evalChildren children}\n</${name}>\n")
     else tag name { } maybeAttrs;
 
-  tagsToGen = [ "html" "head" "body" "div" "p" "a" "title" "meta" "code" "pre" ] ++ (map (n: "h${toString n}") (range 1 6));
+  tagsToGen = [ "html" "head" "body" "div" "p" "a" "title" "meta" "code" "pre" "link" ] ++ (map (n: "h${toString n}") (range 1 6));
   tags = genAttrs tag tagsToGen;
 in
 tags // {
   inherit tag;
-  link = url: tags.a { href = url; };
+  mkLink = url: tags.a { href = url; };
+  mkStylesheet = url: "<link rel=\"stylesheet\" href=\"${url}\">";
 }
