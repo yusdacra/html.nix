@@ -1,6 +1,6 @@
-{ format ? false, lib }:
+{ format ? false, utils }:
 let
-  inherit (lib) concatStrings mapAttrsToList genAttrs isAttrs isList;
+  inherit (utils) concatStrings mapAttrsToList genAttrs isAttrs isList;
 
   fmt = if format then "\n  " else "";
 
@@ -11,7 +11,7 @@ let
     then (children: "<${name}${evalAttrs maybeAttrs}>${fmt}${evalChildren children}${fmt}</${name}>")
     else tag name { } maybeAttrs;
 
-  tags = (genAttrs [ "html" "head" "body" "div" "p" "a" ] tag);
+  tags = (genAttrs tag [ "html" "head" "body" "div" "p" "a" ]);
 in
 tags // {
   inherit tag;
