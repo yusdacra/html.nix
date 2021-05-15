@@ -1,6 +1,7 @@
 { utils, pkgs }:
-let pkgBin = name: "${pkgs.${name}}/bin/${name}"; in
-{
+let
+  pkgBin = name: "${pkgs.${name}}/bin/${name}";
+
   mkServePathScript = path: pkgs.writeScriptBin "serve" ''
     #!${pkgs.stdenv.shell}
     ${pkgBin "miniserve"} --index index.html ${path}
@@ -20,4 +21,9 @@ let pkgBin = name: "${pkgs.${name}}/bin/${name}"; in
       mkdir -p $out
       ${concatStringsSep "\n" createFileCmds}
     '';
+in
+{
+  inherit mkServePathScript mkSitePath;
+
+  mkServeFromSite = site: mkServePathScript (mkSitePath site);
 }

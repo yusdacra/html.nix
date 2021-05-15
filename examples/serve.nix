@@ -16,5 +16,7 @@ let
         (link "./index.html" "go back")
       ])
     ];
+
+  site = { "index.html" = index; "ex.html" = ex; };
 in
-mkServePathScript (mkSitePath { "index.html" = index; "ex.html" = ex; })
+mkServeFromSite site
