@@ -31,7 +31,7 @@ in
   inherit mkServePathScript mkSitePath parseMarkdown;
 
   mkServeFromSite = site: mkServePathScript (mkSitePath site);
-  mkSiteFrom = { src, templater }:
+  mkSiteFrom = { src, templater, local ? false }:
     let
       inherit (utils) readDir readFile fromTOML mapAttrsToList sort elemAt;
       inherit (pkgs.lib) nameValuePair head splitString pipe removeSuffix mapAttrs';
@@ -64,7 +64,7 @@ in
           )
           (readDir path);
       siteConfig = fromTOML (readFile (src + "/config.toml"));
-      baseurl = siteConfig.baseurl or (throw "Need baseurl");
+      baseurl = if local then "http://127.0.0.1:8080" else siteConfig.baseurl or (throw "Need baseurl");
 
       context = {
         inherit utils pkgs baseurl;

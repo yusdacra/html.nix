@@ -6,4 +6,5 @@ in
 htmlNix.mkServeFromSite (htmlNix.mkSiteFrom {
   inherit src;
   templater = lib.templaters.basic;
+  local = true;
 })
