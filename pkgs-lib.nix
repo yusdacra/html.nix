@@ -51,7 +51,7 @@ in
               d = getPart p.name;
               od = getPart op.name;
             in
-            !(((d 0) > (od 0)) && ((d 1) > (od 1)) && ((d 2) > (od 2)))
+              !(((d 0) > (od 0)) && ((d 1) > (od 1)) && ((d 2) > (od 2)))
           ))
         ];
       siteConfig = fromTOML (readFile (src + "/config.toml"));

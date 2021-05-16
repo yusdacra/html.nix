@@ -58,7 +58,7 @@ let
         body = {
           font-family = [ "Raleway" "Helvetica" "Arial" "sans-serif" ];
         };
-        code = {
+        pre = {
           font-family = [ "Iosevka Term" "Iosevka" "monospace" ];
           background = "#000000cc";
           color = "#eeeeee";
