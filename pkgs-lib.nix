@@ -64,12 +64,20 @@ in
           )
           (readDir path);
       siteConfig = fromTOML (readFile (src + "/config.toml"));
+      baseurl = siteConfig.baseurl or (throw "Need baseurl");
 
       context = {
-        inherit utils pkgs;
+        inherit utils pkgs baseurl;
         config = siteConfig;
         posts = postsRendered;
         pages = pagesRendered;
+        site = {
+          "robots.txt" = ''
+            User-agent: *
+            Allow: /
+            Sitemap: ${baseurl}/sitemap.xml
+          '';
+        };
       };
     in
     (templater context).site;

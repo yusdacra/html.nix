@@ -1,4 +1,4 @@
-{ utils, posts, pkgs, config, pages, ... }@context:
+{ utils, posts, pkgs, config, pages, site, baseurl, ... }@context:
 let
   inherit (utils) readFile mapAttrsToList tags fetchGit map elemAt foldl';
   inherit (pkgs.lib) optional length splitString mapAttrs' nameValuePair;
@@ -6,7 +6,7 @@ let
   stylesheets = map tags.mkStylesheet [
     "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
     "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css"
-    "mine.css"
+    "${baseurl}/site.css"
   ];
 
   renderPost = { name, value }:
@@ -22,8 +22,8 @@ let
 
   pagesSection =
     (map
-      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "./${name}.html"; class = "postheader"; } name))
-      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "./index.html"; class = "postheader"; } "posts")) ];
+      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/${name}.html"; class = "postheader"; } name))
+      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/index.html"; class = "postheader"; } "posts")) ];
 
   postsSectionContent = with tags; [
     (a { href = "#posts"; class = "postheader"; } (h1 "# posts"))
@@ -37,13 +37,16 @@ let
   );
 
   mkPage = content: with tags;
-    html [
-      (head (stylesheets ++ [
-        (title config.title)
-        (meta { name = "viewport"; content = "width=device-width, initial-scale=1"; })
-      ]))
-      (body (sidebarSection ++ [ (div { class = "content"; } content) ]))
-    ];
+    ''
+      <!DOCTYPE html>
+      ${html [
+        (head (stylesheets ++ [
+          (title config.title)
+          (meta { name = "viewport"; content = "width=device-width, initial-scale=1"; })
+        ]))
+        (body (sidebarSection ++ [ (div { class = "content"; } content) ]))
+      ]}
+    '';
 
   stylesheet =
     with utils.css;
@@ -97,8 +100,8 @@ in
 {
   inherit stylesheets sidebarSection mkPage stylesheet;
 
-  site = {
+  site = site // {
     "index.html" = mkPage postsSectionContent;
-    "mine.css" = stylesheet;
+    "site.css" = stylesheet;
   } // (mapAttrs' (name: value: nameValuePair (name + ".html") (mkPage value)) pages);
 }
