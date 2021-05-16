@@ -75,7 +75,6 @@ in
           "robots.txt" = ''
             User-agent: *
             Allow: /
-            Sitemap: ${baseurl}/sitemap.xml
           '';
         };
       };
