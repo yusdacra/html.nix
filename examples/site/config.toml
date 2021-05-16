@@ -1,6 +1,1 @@
 title = "test site"
-
-[pages]
-index = "index.html"
-about = "about.html"
-test = "404.html"

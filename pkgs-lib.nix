@@ -34,7 +34,7 @@ in
   mkSiteFrom = { src, templater }:
     let
       inherit (utils) readDir readFile fromTOML mapAttrsToList sort elemAt;
-      inherit (pkgs.lib) nameValuePair head splitString pipe removeSuffix;
+      inherit (pkgs.lib) nameValuePair head splitString pipe removeSuffix mapAttrs';
 
       postsRendered =
         let path = src + "/posts"; in
@@ -42,7 +42,7 @@ in
           (mapAttrsToList (name: _:
             nameValuePair
               (head (splitString "." name))
-              (parseMarkdown name (readFile (path + "/${name}")))
+              (readFile (parseMarkdown name (readFile (path + "/${name}"))))
           ))
           (sort (p: op:
             let
@@ -54,12 +54,22 @@ in
               !(((d 0) > (od 0)) && ((d 1) > (od 1)) && ((d 2) > (od 2)))
           ))
         ];
+      pagesRendered =
+        let path = src + "/pages"; in
+        mapAttrs'
+          (name: _:
+            nameValuePair
+              (head (splitString "." name))
+              (readFile (parseMarkdown name (readFile (path + "/${name}"))))
+          )
+          (readDir path);
       siteConfig = fromTOML (readFile (src + "/config.toml"));
 
       context = {
         inherit utils pkgs;
         config = siteConfig;
         posts = postsRendered;
+        pages = pagesRendered;
       };
     in
     (templater context).site;

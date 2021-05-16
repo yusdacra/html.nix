@@ -1,7 +1,7 @@
-{ utils, posts, pkgs, config, ... }@context:
+{ utils, posts, pkgs, config, pages, ... }@context:
 let
-  inherit (utils) readFile mapAttrsToList tags fetchGit map elemAt;
-  inherit (pkgs.lib) optional length splitString;
+  inherit (utils) readFile mapAttrsToList tags fetchGit map elemAt foldl';
+  inherit (pkgs.lib) optional length splitString mapAttrs' nameValuePair;
 
   stylesheets = map tags.mkStylesheet [
     "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
@@ -17,22 +17,22 @@ let
     with tags; article [
       (a { href = "#${id}"; class = "postheader"; } (h3 { inherit id; } ("## " + id)))
       (h6 ("date: " + (elemAt parts 0)))
-      (readFile value)
+      value
     ];
 
-  pages =
-    mapAttrsToList
-      (name: relPath: tags.div { class = "pure-u-1"; } (tags.a { href = "./${relPath}"; class = "postheader"; } name))
-      (config.pages or { });
+  pagesSection =
+    map
+      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "./${name}.html"; class = "postheader"; } name))
+      ((mapAttrsToList (name: _: name) pages) ++ [ "index" ]);
 
   postsSectionContent = with tags; [
     (a { href = "#posts"; class = "postheader"; } (h1 "# posts"))
   ] ++ (map renderPost posts);
 
-  sidebarSection = optional ((length pages) > 0) (
+  sidebarSection = optional ((length pagesSection) > 0) (
     with tags; nav { class = "sidebar"; } ([
       (a { href = "#pages"; class = "postheader"; } (h1 "# pages"))
-      (div { class = "pure-g"; } pages)
+      (div { class = "pure-g"; } pagesSection)
     ])
   );
 
@@ -100,5 +100,5 @@ in
   site = {
     "index.html" = mkPage postsSectionContent;
     "mine.css" = stylesheet;
-  };
+  } // (mapAttrs' (name: value: nameValuePair (name + ".html") (mkPage value)) pages);
 }
