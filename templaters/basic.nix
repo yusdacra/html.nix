@@ -3,7 +3,11 @@ let
   inherit (utils) readFile mapAttrsToList tags fetchGit map;
   inherit (pkgs.lib) flatten optional length;
 
-  stylesheets = map tags.mkStylesheet [ "https://unpkg.com/purecss@2.0.6/build/pure-min.css" "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css" "mine.css" ];
+  stylesheets = map tags.mkStylesheet [
+    "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
+    "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css"
+    "mine.css"
+  ];
 
   renderPost = name: value: with tags; article [
     (a { href = "#${name}"; class = "postheader"; } (h3 { id = name; } ("## " + name)))
@@ -37,6 +41,12 @@ let
 
   stylesheet =
     with utils.css;
+    let
+      marginMobile = {
+        margin-left = "3%";
+        margin-right = "3%";
+      };
+    in
     css [
       (css {
         body = {
@@ -71,14 +81,10 @@ let
         "nav.sidebar" = {
           position = "relative";
           margin-top = "5%";
-          margin-left = "3%";
-          margin-right = "3%";
-        };
+        } // marginMobile;
         "div.content" = {
           margin-top = 0;
-          margin-left = "3%";
-          margin-right = "3%";
-        };
+        } // marginMobile;
       })
     ];
 in

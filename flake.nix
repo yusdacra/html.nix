@@ -10,10 +10,14 @@
         utils = import ./utils.nix;
 
         lib = {
+          # Convert Nix expressions to HTML
           tags = import ./tags.nix { inherit utils; };
+          # Convert Nix expressions to CSS
           css = import ./css.nix { inherit utils; };
 
+          # Various site templaters
           templaters = {
+            # Basic templater with purecss, mobile responsive layout and supports posts
             basic = import ./templaters/basic.nix;
           };
         };
