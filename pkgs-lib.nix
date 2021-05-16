@@ -33,18 +33,27 @@ in
   mkServeFromSite = site: mkServePathScript (mkSitePath site);
   mkSiteFrom = { src, templater }:
     let
-      inherit (utils) readDir readFile fromTOML;
-      inherit (pkgs.lib) mapAttrs' nameValuePair head splitString;
+      inherit (utils) readDir readFile fromTOML mapAttrsToList sort elemAt;
+      inherit (pkgs.lib) nameValuePair head splitString pipe removeSuffix;
 
       postsRendered =
         let path = src + "/posts"; in
-        mapAttrs'
-          (name: _:
+        pipe (readDir path) [
+          (mapAttrsToList (name: _:
             nameValuePair
               (head (splitString "." name))
               (parseMarkdown name (readFile (path + "/${name}")))
-          )
-          (readDir path);
+          ))
+          (sort (p: op:
+            let
+              extractDate = name: splitString "-" (head (splitString "_" name));
+              getPart = name: el: removeSuffix "0" (elemAt (extractDate name) el);
+              d = getPart p.name;
+              od = getPart op.name;
+            in
+            !(((d 0) > (od 0)) && ((d 1) > (od 1)) && ((d 2) > (od 2)))
+          ))
+        ];
       siteConfig = fromTOML (readFile (src + "/config.toml"));
 
       context = {

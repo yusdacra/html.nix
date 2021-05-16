@@ -1,7 +1,7 @@
 { utils, posts, pkgs, config, ... }@context:
 let
-  inherit (utils) readFile mapAttrsToList tags fetchGit map;
-  inherit (pkgs.lib) flatten optional length;
+  inherit (utils) readFile mapAttrsToList tags fetchGit map elemAt;
+  inherit (pkgs.lib) optional length splitString;
 
   stylesheets = map tags.mkStylesheet [
     "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
@@ -9,11 +9,17 @@ let
     "mine.css"
   ];
 
-  renderPost = name: value: with tags; article [
-    (a { href = "#${name}"; class = "postheader"; } (h3 { id = name; } ("## " + name)))
-    (readFile value)
-  ];
-  allPosts = flatten (mapAttrsToList renderPost posts);
+  renderPost = { name, value }:
+    let
+      parts = splitString "_" name;
+      id = elemAt parts 1;
+    in
+    with tags; article [
+      (a { href = "#${id}"; class = "postheader"; } (h3 { inherit id; } ("## " + id)))
+      (h6 ("date: " + (elemAt parts 0)))
+      (readFile value)
+    ];
+
   pages =
     mapAttrsToList
       (name: relPath: tags.div { class = "pure-u-1"; } (tags.a { href = "./${relPath}"; class = "postheader"; } name))
@@ -21,7 +27,7 @@ let
 
   postsSectionContent = with tags; [
     (a { href = "#posts"; class = "postheader"; } (h1 "# posts"))
-  ] ++ allPosts;
+  ] ++ (map renderPost posts);
 
   sidebarSection = optional ((length pages) > 0) (
     with tags; nav { class = "sidebar"; } ([
