@@ -4,7 +4,8 @@ let
 
   mkServePathScript = path: pkgs.writeScriptBin "serve" ''
     #!${pkgs.stdenv.shell}
-    ${pkgBin "miniserve"} --index index.html ${path}
+    cd ${path}
+    ${pkgBin "caddy"} run --config Caddyfile
   '';
 
   mkSitePath = site:
@@ -64,7 +65,7 @@ in
           )
           (readDir path);
       siteConfig = fromTOML (readFile (src + "/config.toml"));
-      baseurl = if local then "http://127.0.0.1:8080" else siteConfig.baseurl or (throw "Need baseurl");
+      baseurl = if local then "http://localhost:8080" else siteConfig.baseurl or (throw "Need baseurl");
 
       context = {
         inherit utils pkgs baseurl;
@@ -75,6 +76,15 @@ in
           "robots.txt" = ''
             User-agent: *
             Allow: /
+          '';
+          "Caddyfile" = ''
+            ${baseurl}
+
+            handle_errors {
+              rewrite * /{http.error.status_code}.html
+              file_server
+            }
+            file_server
           '';
         };
       };

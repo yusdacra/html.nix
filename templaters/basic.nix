@@ -1,7 +1,7 @@
 { utils, posts, pkgs, config, pages, site, baseurl, ... }@context:
 let
-  inherit (utils) readFile mapAttrsToList tags fetchGit map elemAt foldl';
-  inherit (pkgs.lib) optional length splitString mapAttrs' nameValuePair;
+  inherit (utils) readFile mapAttrsToList mapAttrs tags fetchGit map elemAt foldl';
+  inherit (pkgs.lib) optional length splitString nameValuePair;
 
   stylesheets = map tags.mkStylesheet [
     "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
@@ -22,8 +22,8 @@ let
 
   pagesSection =
     (map
-      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/${name}"; class = "postheader"; } name))
-      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}"; class = "postheader"; } "posts")) ];
+      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/${name}"; class = "pagelink"; } name))
+      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}"; class = "pagelink"; } "posts")) ];
 
   postsSectionContent = with tags; [
     (a { href = "#posts"; class = "postheader"; } (h1 "# posts"))
@@ -60,18 +60,26 @@ let
       (css {
         body = {
           font-family = [ "Raleway" "Helvetica" "Arial" "sans-serif" ];
+          background = "#111111";
+          color = "#eeeeee";
         };
         pre = {
           font-family = [ "Iosevka Term" "Iosevka" "monospace" ];
-          background = "#000000cc";
+          background = "#171A21";
           color = "#eeeeee";
         };
-        "a.postheader,a.postheader:hover" = {
-          color = "inherit";
+        "a,a:hover" = {
+          color = "#ffd814";
           text-decoration = "none";
         };
-        "a.postheader:hover" = {
+        "a:hover" = {
           text-decoration = "underline";
+        };
+        "a.postheader,a.postheader:hover" = {
+          color = "#fc6711";
+        };
+        "a.pagelink,a.pagelink:hover" = {
+          color = "#ffd814";
         };
         "div.content" = {
           margin-top = "5%";
@@ -102,6 +110,7 @@ in
 
   site = site // {
     "index.html" = mkPage postsSectionContent;
+    "404.html" = mkPage (tags.h1 "No such page");
     "site.css" = stylesheet;
-  } // (mapAttrs' (name: value: nameValuePair (name + ".html") (mkPage value)) pages);
+  } // (mapAttrs (name: value: { "index.html" = mkPage value; }) pages);
 }
