@@ -6,7 +6,7 @@ let
   evalChildren = children: if isList children then concatStrings children else children;
   tag = name: maybeAttrs:
     if isAttrs maybeAttrs
-    then (children: "<${name}${evalAttrs maybeAttrs}>\n  ${evalChildren children}\n</${name}>\n")
+    then (children: "<${name}${evalAttrs maybeAttrs}>${evalChildren children}</${name}>")
     else tag name { } maybeAttrs;
   noChildrenTag = name: attrs: "<${name} ${evalAttrs attrs}>";
 
