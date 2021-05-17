@@ -25,7 +25,7 @@ let
 
   parseMarkdown = name: contents:
     pkgs.runCommand name { } ''
-      printf "${contents}" | ${pkgBin "lowdown"} -o $out -
+      printf '${contents}' | ${pkgBin "pandoc"} -f gfm > $out
     '';
 in
 {
