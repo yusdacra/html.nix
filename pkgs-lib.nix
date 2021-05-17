@@ -15,7 +15,7 @@ let
 
       fileAttrPaths = recursiveAttrPaths site;
       texts = mapAttrsRecursive (path: value: pkgs.writeText (concatStringsSep "-" path) value) site;
-      mkCreateFileCmd = path: value: let p = concatStringsSep "/" (init path); in "mkdir -p $out/${p} && ln -s ${value} $out/${p}/${last path}";
+      mkCreateFileCmd = path: value: let p = concatStringsSep "/" (init path); in "mkdir -p \"$out/${p}\" && ln -s \"${value}\" \"$out/${p}/${last path}\"";
       createFileCmds = map (path: mkCreateFileCmd path (getAttrFromPath path texts)) fileAttrPaths;
     in
     pkgs.runCommand "site-path" { } ''
