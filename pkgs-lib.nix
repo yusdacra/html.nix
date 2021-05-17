@@ -25,7 +25,7 @@ let
 
   parseMarkdown = name: contents:
     pkgs.runCommand name { } ''
-      printf '${contents}' | ${pkgBin "pandoc"} -f gfm > $out
+      printf ${pkgs.lib.escapeShellArg contents} | ${pkgBin "pandoc"} -f gfm > $out
     '';
 in
 {
