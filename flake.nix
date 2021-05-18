@@ -5,36 +5,34 @@
   };
 
   outputs = { self, flakeUtils, nixpkgs }:
-    flakeUtils.lib.eachDefaultSystem (system:
-      let
-        utils = import ./utils.nix;
+    let
+      utils = import ./utils.nix;
 
-        lib = {
-          # Convert Nix expressions to HTML
-          tags = import ./tags.nix { inherit utils; };
-          # Convert Nix expressions to CSS
-          css = import ./css.nix { inherit utils; };
+      lib = {
+        # Convert Nix expressions to HTML
+        tags = import ./tags.nix { inherit utils; };
+        # Convert Nix expressions to CSS
+        css = import ./css.nix { inherit utils; };
 
-          # Various site templaters
-          templaters = {
-            # Basic templater with purecss, mobile responsive layout and supports posts
-            basic = import ./templaters/basic.nix;
-          };
+        # Various site templaters
+        templaters = {
+          # Basic templater with purecss, mobile responsive layout and supports posts
+          basic = import ./templaters/basic.nix;
         };
+      };
 
-        pkgsLib = (final: prev: {
-          htmlNix = import ./pkgs-lib.nix { pkgs = prev; utils = utils // { inherit (lib) tags css; }; };
-        });
-
-        pkgs = import nixpkgs { inherit system; overlays = [ pkgsLib ]; };
+      overlay = final: prev: {
+        htmlNix = (import ./pkgs-lib.nix { pkgs = prev; utils = utils // { inherit (lib) tags css; }; }) // lib;
+      };
+    in
+    { inherit overlay; } //
+    (flakeUtils.lib.eachDefaultSystem (system:
+      let
+        pkgs = import nixpkgs { inherit system; overlays = [ overlay ]; };
       in
       {
         lib = lib // {
           pkgsLib = import ./pkgs-lib.nix { inherit pkgs; utils = utils // { inherit (lib) tags css; }; };
-        };
-
-        overlays = {
-          inherit pkgsLib;
         };
 
         apps = with flakeUtils.lib; {
@@ -51,5 +49,5 @@
         examples = {
           tags = import ./examples/tags.nix lib.tags;
         };
-      });
+      }));
 }
