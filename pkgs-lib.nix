@@ -18,13 +18,13 @@ let
       mkCreateFileCmd = path: value: let p = concatStringsSep "/" (init path); in "mkdir -p \"$out/${p}\" && ln -s \"${value}\" \"$out/${p}/${last path}\"";
       createFileCmds = map (path: mkCreateFileCmd path (getAttrFromPath path texts)) fileAttrPaths;
     in
-    pkgs.runCommand "site-path" { } ''
+    pkgs.runCommandLocal "site-path" { } ''
       mkdir -p $out
       ${concatStringsSep "\n" createFileCmds}
     '';
 
   parseMarkdown = name: contents:
-    pkgs.runCommand name { } ''
+    pkgs.runCommandLocal name { } ''
       printf ${pkgs.lib.escapeShellArg contents} | ${pkgBin "pandoc"} -f gfm > $out
     '';
 in
