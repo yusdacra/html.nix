@@ -130,6 +130,7 @@
           "nav.sidebar" = {
             position = "fixed";
             margin-left = "3%";
+            padding-top = 0;
             z-index = 1000;
           };
         }
