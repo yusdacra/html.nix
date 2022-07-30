@@ -25,7 +25,7 @@
     };
 
     outputs = flakeUtils.lib.eachDefaultSystem (system: let
-      pkgs = nixpkgs.legacyPackagse.${system};
+      pkgs = nixpkgs.legacyPackages.${system};
     in {
       lib = {
         pkgsLib = import ./pkgs-lib.nix {
