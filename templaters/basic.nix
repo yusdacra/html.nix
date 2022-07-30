@@ -129,8 +129,7 @@
           };
           "nav.sidebar" = {
             position = "fixed";
-            top = 0;
-            margin-top = "5%";
+            padding-top = "5%";
             margin-left = "3%";
             z-index = 1000;
           };
