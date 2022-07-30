@@ -22,8 +22,8 @@ let
 
   pagesSection =
     (map
-      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/${name}"; class = "pagelink"; } name))
-      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}"; class = "pagelink"; } "posts")) ];
+      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/${name}/"; class = "pagelink"; } name))
+      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/"; class = "pagelink"; } "posts")) ];
 
   postsSectionContent = with tags; [
     (a { href = "#posts"; class = "postheader"; } (h1 "posts"))
