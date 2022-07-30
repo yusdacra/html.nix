@@ -1,5 +1,13 @@
-{ utils, posts, pkgs, config, pages, site, baseurl, ... }@context:
-let
+{
+  utils,
+  posts,
+  pkgs,
+  config,
+  pages,
+  site,
+  baseurl,
+  ...
+} @ context: let
   inherit (utils) readFile mapAttrsToList mapAttrs tags fetchGit map elemAt foldl' concatStrings genAttrs toString;
   inherit (pkgs.lib) optional length splitString nameValuePair toInt range mapAttrs';
 
@@ -9,67 +17,96 @@ let
     "${baseurl}/site.css"
   ];
 
-  renderPost = { name, value }:
-    let
-      parts = splitString "_" name;
-      id = elemAt parts 1;
-    in
-    with tags; article [
-      (a { href = "#${id}"; class = "postheader"; } (h2 { inherit id; } id))
-      (h3 ("date: " + (elemAt parts 0)))
-      value
-    ];
+  renderPost = {
+    name,
+    value,
+  }: let
+    parts = splitString "_" name;
+    id = elemAt parts 1;
+  in
+    with tags;
+      article [
+        (a {
+          href = "#${id}";
+          class = "postheader";
+        } (h2 {inherit id;} id))
+        (h3 ("date: " + (elemAt parts 0)))
+        value
+      ];
 
   pagesSection =
     (map
-      (name: tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/${name}/"; class = "pagelink"; } name))
-      (mapAttrsToList (name: _: name) pages)) ++ [ (tags.div { class = "pure-u-1"; } (tags.a { href = "${baseurl}/"; class = "pagelink"; } "posts")) ];
+      (name:
+        tags.div {class = "pure-u-1";} (tags.a {
+            href = "${baseurl}/${name}/";
+            class = "pagelink";
+          }
+          name))
+      (mapAttrsToList (name: _: name) pages))
+    ++ [
+      (tags.div {class = "pure-u-1";} (tags.a {
+        href = "${baseurl}/";
+        class = "pagelink";
+      } "posts"))
+    ];
 
-  postsSectionContent = with tags; [
-    (a { href = "#posts"; class = "postheader"; } (h1 "posts"))
-  ] ++ (map renderPost posts);
+  postsSectionContent = with tags;
+    [
+      (a {
+        href = "#posts";
+        class = "postheader";
+      } (h1 "posts"))
+    ]
+    ++ (map renderPost posts);
 
   sidebarSection = optional ((length pagesSection) > 0) (
-    with tags; nav { class = "sidebar"; } ([
-      (a { href = "#pages"; class = "postheader"; } (h1 "pages"))
-      (div { class = "pure-g"; } pagesSection)
-    ])
+    with tags;
+      nav {class = "sidebar";} [
+        (a {
+          href = "#pages";
+          class = "postheader";
+        } (h1 "pages"))
+        (div {class = "pure-g";} pagesSection)
+      ]
   );
 
-  mkPage = content: with tags;
-    ''
+  mkPage = content:
+    with tags; ''
       <!DOCTYPE html>
       ${html [
-        (head (stylesheets ++ [
-          (title config.title)
-          (meta { name = "viewport"; content = "width=device-width, initial-scale=1"; })
-        ]))
-        (body (sidebarSection ++ [ (div { class = "content"; } content) ]))
+        (head (stylesheets
+          ++ [
+            (title config.title)
+            (meta {
+              name = "viewport";
+              content = "width=device-width, initial-scale=1";
+            })
+          ]))
+        (body (sidebarSection ++ [(div {class = "content";} content)]))
       ]}
     '';
 
-  stylesheet =
-    with utils.css;
-    let
-      marginMobile = {
-        margin-left = "3%";
-        margin-right = "3%";
-      };
-    in
+  stylesheet = with utils.css; let
+    marginMobile = {
+      margin-left = "3%";
+      margin-right = "3%";
+    };
+  in
     css [
       (css (
         (
           mapAttrs'
-            (name: value: nameValuePair value { content = "\"${concatStrings (map (_: "#") (range 1 (toInt name)))} \""; })
-            (genAttrs (n: "h${toString n}:before") (map toString (range 1 6)))
-        ) // {
+          (name: value: nameValuePair value {content = "\"${concatStrings (map (_: "#") (range 1 (toInt name)))} \"";})
+          (genAttrs (n: "h${toString n}:before") (map toString (range 1 6)))
+        )
+        // {
           body = {
-            font-family = [ "Raleway" "Helvetica" "Arial" "sans-serif" ];
+            font-family = ["Raleway" "Helvetica" "Arial" "sans-serif"];
             background = "#111111";
             color = "#eeeeee";
           };
           pre = {
-            font-family = [ "Iosevka Term" "Iosevka" "monospace" ];
+            font-family = ["Iosevka Term" "Iosevka" "monospace"];
             background = "#171A21";
             color = "#eeeeee";
           };
@@ -101,22 +138,28 @@ let
         }
       ))
       (media "max-width: 48em" {
-        "nav.sidebar" = {
-          position = "relative";
-          margin-top = "5%";
-        } // marginMobile;
-        "div.content" = {
-          margin-top = 0;
-        } // marginMobile;
+        "nav.sidebar" =
+          {
+            position = "relative";
+            margin-top = "5%";
+          }
+          // marginMobile;
+        "div.content" =
+          {
+            margin-top = 0;
+          }
+          // marginMobile;
       })
     ];
-in
-{
+in {
   inherit stylesheets sidebarSection mkPage stylesheet;
 
-  site = site // {
-    "index.html" = mkPage postsSectionContent;
-    "404.html" = mkPage (tags.h1 "No such page");
-    "site.css" = stylesheet;
-  } // (mapAttrs (name: value: { "index.html" = mkPage value; }) pages);
+  site =
+    site
+    // {
+      "index.html" = mkPage postsSectionContent;
+      "404.html" = mkPage (tags.h1 "No such page");
+      "site.css" = stylesheet;
+    }
+    // (mapAttrs (name: value: {"index.html" = mkPage value;}) pages);
 }

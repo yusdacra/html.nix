@@ -1,6 +1,8 @@
-{ tags, pkgs }:
-with pkgs.htmlNix;
-let
+{
+  tags,
+  pkgs,
+}:
+with pkgs.htmlNix; let
   index = with tags;
     html [
       (body [
@@ -17,6 +19,9 @@ let
       ])
     ];
 
-  site = { "index.html" = index; "ex.html" = ex; };
+  site = {
+    "index.html" = index;
+    "ex.html" = ex;
+  };
 in
-mkServeFromSite site
+  mkServeFromSite site

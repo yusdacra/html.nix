@@ -1,7 +1,8 @@
-tags: with tags;
-html [
-  (body [
-    (p "Hello,")
-    (p "world!")
-  ])
-]
+tags:
+with tags;
+  html [
+    (body [
+      (p "Hello,")
+      (p "world!")
+    ])
+  ]
