@@ -15,12 +15,12 @@
     inherit (utils) recursiveAttrPaths concatStringsSep map;
     inherit (pkgs.lib) mapAttrsRecursive init last getAttrFromPath;
 
-    convertToPath = value:
+    convertToPath = path: value:
       if builtins.isPath value
       then value
       else pkgs.writeText (concatStringsSep "-" path) value;
     fileAttrPaths = recursiveAttrPaths site;
-    texts = mapAttrsRecursive (path: value: convertToPath value) site;
+    texts = mapAttrsRecursive convertToPath site;
     mkCreateFileCmd = path: value: let p = concatStringsSep "/" (init path); in "mkdir -p \"$out/${p}\" && ln -s \"${value}\" \"$out/${p}/${last path}\"";
     createFileCmds = map (path: mkCreateFileCmd path (getAttrFromPath path texts)) fileAttrPaths;
   in
