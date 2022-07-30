@@ -62,10 +62,6 @@
   sidebarSection = optional ((length pagesSection) > 0) (
     with tags;
       nav {class = "sidebar";} [
-        (a {
-          href = "#pages";
-          class = "postheader";
-        } (h1 "pages"))
         (div {class = "pure-g";} pagesSection)
       ]
   );
