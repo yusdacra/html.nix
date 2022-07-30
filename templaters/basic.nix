@@ -9,7 +9,7 @@
   ...
 } @ context: let
   inherit (utils) readFile mapAttrsToList mapAttrs tags fetchGit map elemAt foldl' concatStrings genAttrs toString;
-  inherit (pkgs.lib) optional length splitString nameValuePair toInt range mapAttrs';
+  inherit (pkgs.lib) optionalAttrs optional length splitString nameValuePair toInt range mapAttrs';
 
   stylesheets = map tags.mkStylesheet [
     "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
@@ -86,6 +86,8 @@
       ]}
     '';
 
+  indexPage = mkPage (context.indexContent or postsSectionContent);
+
   stylesheet = with utils.css; let
     marginMobile = {
       margin-left = "3%";
@@ -157,9 +159,10 @@ in {
   site =
     site
     // {
-      "index.html" = mkPage postsSectionContent;
+      "index.html" = indexPage;
       "404.html" = mkPage (tags.h1 "No such page");
       "site.css" = stylesheet;
     }
-    // (mapAttrs (name: value: {"index.html" = mkPage value;}) pages);
+    // (mapAttrs (name: value: {"index.html" = mkPage value;}) pages)
+    // optionalAttrs (context ? resources) {inherit (context) resources;};
 }
