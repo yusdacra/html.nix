@@ -111,7 +111,7 @@
             })
           ]))
         (body ''
-          <script>0</script>
+          ${script "0"}
           ${sidebarSection}
           ${div {class = "content";} content}
         '')

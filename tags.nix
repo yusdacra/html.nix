@@ -12,7 +12,10 @@
     else tag name {} maybeAttrs;
   noChildrenTag = name: attrs: "<${name} ${evalAttrs attrs}>";
 
-  tagsToGen = ["ul" "li" "html" "head" "body" "div" "p" "a" "title" "code" "pre" "nav" "article"] ++ (map (n: "h${toString n}") (range 1 6));
+  tagsToGen =
+    (map (n: "h${toString n}") (range 1 6))
+    ++ ["ul" "li" "html" "head" "body" "div" "p"]
+    ++ ["a" "title" "code" "pre" "nav" "article" "script"];
   tags = genAttrs tag tagsToGen;
 
   noChildrenTagsToGen = ["link" "meta"];
