@@ -163,7 +163,7 @@
             margin-top = "5%";
             margin-bottom = "5%";
             margin-left = "20%";
-            margin-right = "10%";
+            margin-right = "25%";
           };
           "nav.sidebar" = {
             position = "fixed";
