@@ -9,7 +9,8 @@
   ...
 } @ context: let
   inherit (utils) readFile mapAttrsToList mapAttrs tags fetchGit map elemAt foldl' concatStrings genAttrs toString;
-  inherit (pkgs.lib) optionalAttrs optional length splitString nameValuePair toInt range mapAttrs';
+  inherit (pkgs.lib) optionalAttrs optional length splitString nameValuePair toInt range mapAttrs' singleton;
+  inherit (builtins) listToAttrs;
 
   stylesheets = map tags.mkStylesheet [
     "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
@@ -17,12 +18,21 @@
     "${baseurl}/site.css"
   ];
 
+  parsePostName = name: let
+    parts = splitString "_" name;
+    id = elemAt parts 1;
+    date = elemAt parts 0;
+  in {
+    inherit id date;
+    formatted = "${date} - ${id}";
+  };
+
   renderPost = {
     name,
     value,
   }: let
-    parts = splitString "_" name;
-    id = elemAt parts 1;
+    parsed = parsePostName name;
+    inherit (parsed) id date;
   in
     with tags;
       article [
@@ -30,12 +40,18 @@
           href = "#${id}";
           class = "postheader";
         } (h2 {inherit id;} id))
-        (h3 ("date: " + (elemAt parts 0)))
+        (h3 ("date: " + date))
         value
       ];
 
   pagesSection =
-    (map
+    [
+      (tags.div {class = "pure-u-1";} (tags.a {
+        href = "${baseurl}/";
+        class = "pagelink";
+      } "home"))
+    ]
+    ++ (map
       (name:
         tags.div {class = "pure-u-1";} (tags.a {
             href = "${baseurl}/${name}/";
@@ -45,10 +61,26 @@
       (mapAttrsToList (name: _: name) pages))
     ++ [
       (tags.div {class = "pure-u-1";} (tags.a {
-        href = "${baseurl}/";
+        href = "${baseurl}/posts/";
         class = "pagelink";
       } "posts"))
     ];
+
+  postsRendered = map renderPost posts;
+
+  postsLinks = with tags;
+    singleton
+    (ul (
+      map
+      (
+        post:
+          li (
+            a {href = "${baseurl}/${post.name}";}
+            (parsePostName post.name).formatted
+          )
+      )
+      posts
+    ));
 
   postsSectionContent = with tags;
     [
@@ -57,7 +89,7 @@
         class = "postheader";
       } (h1 "posts"))
     ]
-    ++ (map renderPost posts);
+    ++ postsLinks;
 
   sidebarSection = optional ((length pagesSection) > 0) (
     with tags;
@@ -83,6 +115,12 @@
     '';
 
   indexPage = mkPage (context.indexContent or postsSectionContent);
+
+  pagesAndPosts =
+    pages
+    // listToAttrs (
+      map (post: nameValuePair post.name (renderPost post)) posts
+    );
 
   stylesheet = with utils.css; let
     marginMobile = {
@@ -156,9 +194,10 @@ in {
     site
     // {
       "index.html" = indexPage;
+      "posts"."index.html" = mkPage postsSectionContent;
       "404.html" = mkPage (tags.h1 "No such page");
       "site.css" = stylesheet;
     }
-    // (mapAttrs (name: value: {"index.html" = mkPage value;}) pages)
+    // (mapAttrs (name: value: {"index.html" = mkPage value;}) pagesAndPosts)
     // optionalAttrs (context ? resources) {inherit (context) resources;};
 }
