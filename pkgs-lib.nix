@@ -6,9 +6,7 @@
 
   mkServePathScript = path:
     pkgs.writeScriptBin "serve" ''
-      #!${pkgs.stdenv.shell}
-      cd ${path}
-      ${pkgBin "caddy"} run --config Caddyfile
+      ${pkgs.nodePackages.http-server}/bin/http-server -c-1 ${path}
     '';
 
   mkSitePath = site: let
@@ -91,15 +89,6 @@ in {
         "robots.txt" = ''
           User-agent: *
           Allow: /
-        '';
-        "Caddyfile" = ''
-          ${baseurl}
-
-          handle_errors {
-            rewrite * /{http.error.status_code}.html
-            file_server
-          }
-          file_server
         '';
       };
     };
