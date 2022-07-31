@@ -9,7 +9,7 @@
   ...
 } @ context: let
   inherit (utils) readFile mapAttrsToList mapAttrs tags fetchGit map elemAt foldl' concatStrings genAttrs toString;
-  inherit (pkgs.lib) optionalAttrs optional length splitString nameValuePair toInt range mapAttrs' singleton;
+  inherit (pkgs.lib) optionalString optionalAttrs optional length splitString nameValuePair toInt range mapAttrs' singleton;
   inherit (builtins) listToAttrs;
 
   stylesheets = map tags.mkStylesheet [
@@ -91,7 +91,7 @@
     ]
     ++ postsLinks;
 
-  sidebarSection = optional ((length pagesSection) > 0) (
+  sidebarSection = optionalString ((length pagesSection) > 0) (
     with tags;
       nav {class = "sidebar";} [
         (div {class = "pure-g";} pagesSection)
@@ -110,7 +110,11 @@
               content = "width=device-width, initial-scale=1";
             })
           ]))
-        (body (sidebarSection ++ [(div {class = "content";} content)]))
+        (body ''
+          <script>0</script>
+          ${sidebarSection}
+          ${div {class = "content";} content}
+        '')
       ]}
     '';
 
