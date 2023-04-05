@@ -1,207 +1,222 @@
 {
-  utils,
-  posts,
-  pkgs,
   config,
-  pages,
-  site,
-  baseurl,
+  lib,
   ...
-} @ context: let
-  inherit (utils) readFile mapAttrsToList mapAttrs tags fetchGit map elemAt foldl' concatStrings genAttrs toString;
-  inherit (pkgs.lib) optionalString optionalAttrs optional length splitString nameValuePair toInt range mapAttrs' singleton;
-  inherit (builtins) listToAttrs;
+}: let
+  l = lib // builtins;
+  t = l.types;
+  inherit (config.html-nix.lib) html css;
 
-  stylesheets = map tags.mkStylesheet [
-    "https://unpkg.com/purecss@2.0.6/build/pure-min.css"
-    "https://unpkg.com/purecss@2.0.6/build/grids-responsive-min.css"
-    "${baseurl}/site.css"
-  ];
+  func = ctx: let
+    stylesheets = l.map html.mkStylesheet [
+      "https://unpkg.com/purecss@3.0.0/build/pure-min.css"
+      "https://unpkg.com/purecss@3.0.0/build/grids-responsive-min.css"
+      "${ctx.baseurl}/site.css"
+    ];
 
-  parsePostName = name: let
-    parts = splitString "_" name;
-    id = elemAt parts 1;
-    date = elemAt parts 0;
-  in {
-    inherit id date;
-    formatted = "${date} - ${id}";
-  };
+    parsePostName = name: let
+      parts = l.splitString "_" name;
+      id = l.elemAt parts 1;
+      date = l.elemAt parts 0;
+    in {
+      inherit id date;
+      formatted = "${date} - ${id}";
+    };
 
-  renderPost = {
-    name,
-    value,
-  }: let
-    parsed = parsePostName name;
-    inherit (parsed) id date;
-  in
-    with tags;
-      article [
-        (a {
-          href = "#${id}";
-          class = "postheader";
-        } (h2 {inherit id;} id))
-        (h3 ("date: " + date))
-        value
+    renderPost = {
+      name,
+      value,
+    }: let
+      parsed = parsePostName name;
+      inherit (parsed) id date;
+    in
+      with html;
+        article [
+          (a {
+            href = "#${id}";
+            class = "postheader";
+          } (h2 {inherit id;} id))
+          (h3 ("date: " + date))
+          value
+        ];
+
+    pagesSection = with html;
+      [
+        (div {class = "pure-u-1";} (a {
+          href = "${ctx.baseurl}/";
+          class = "pagelink";
+        } "home"))
+      ]
+      ++ (l.map
+        (name:
+          div {class = "pure-u-1";} (a {
+              href = "${ctx.baseurl}/${name}/";
+              class = "pagelink";
+            }
+            name))
+        (l.mapAttrsToList (name: _: name) pages))
+      ++ [
+        (div {class = "pure-u-1";} (a {
+          href = "${ctx.baseurl}/posts/";
+          class = "pagelink";
+        } "posts"))
       ];
 
-  pagesSection =
-    [
-      (tags.div {class = "pure-u-1";} (tags.a {
-        href = "${baseurl}/";
-        class = "pagelink";
-      } "home"))
-    ]
-    ++ (map
-      (name:
-        tags.div {class = "pure-u-1";} (tags.a {
-            href = "${baseurl}/${name}/";
-            class = "pagelink";
-          }
-          name))
-      (mapAttrsToList (name: _: name) pages))
-    ++ [
-      (tags.div {class = "pure-u-1";} (tags.a {
-        href = "${baseurl}/posts/";
-        class = "pagelink";
-      } "posts"))
-    ];
+    postsLinks = with html;
+      singleton
+      (ul (
+        l.map
+        (
+          post:
+            li (
+              a {href = "${ctx.baseurl}/${post.name}";}
+              (parsePostName post.name).formatted
+            )
+        )
+        posts
+      ));
 
-  postsRendered = map renderPost posts;
-
-  postsLinks = with tags;
-    singleton
-    (ul (
-      map
-      (
-        post:
-          li (
-            a {href = "${baseurl}/${post.name}";}
-            (parsePostName post.name).formatted
-          )
-      )
-      posts
-    ));
-
-  postsSectionContent = with tags;
-    [
-      (a {
-        href = "#posts";
-        class = "postheader";
-      } (h1 "posts"))
-    ]
-    ++ postsLinks;
-
-  sidebarSection = optionalString ((length pagesSection) > 0) (
-    with tags;
-      nav {class = "sidebar";} [
-        (div {class = "pure-g";} pagesSection)
+    postsSectionContent = with html;
+      [
+        (a {
+          href = "#posts";
+          class = "postheader";
+        } (h1 "posts"))
       ]
-  );
+      ++ postsLinks;
 
-  mkPage = content:
-    with tags; ''
-      <!DOCTYPE html>
-      ${html [
-        (head (stylesheets
-          ++ [
-            (title config.title)
-            (meta {
-              name = "viewport";
-              content = "width=device-width, initial-scale=1";
-            })
-          ]))
-        (body ''
-          ${script "0"}
-          ${sidebarSection}
-          ${div {class = "content";} content}
-        '')
-      ]}
-    '';
-
-  indexPage = mkPage (context.indexContent or postsSectionContent);
-
-  pagesAndPosts =
-    pages
-    // listToAttrs (
-      map (post: nameValuePair post.name (renderPost post)) posts
+    sidebarSection = l.optionalString ((l.length pagesSection) > 0) (
+      with html;
+        nav {class = "sidebar";} [
+          (div {class = "pure-g";} pagesSection)
+        ]
     );
 
-  stylesheet = with utils.css; let
-    marginMobile = {
-      margin-left = "3%";
-      margin-right = "3%";
-    };
-  in
-    css [
-      (css (
-        (
-          mapAttrs'
-          (name: value: nameValuePair value {content = "\"${concatStrings (map (_: "#") (range 1 (toInt name)))} \"";})
-          (genAttrs (n: "h${toString n}:before") (map toString (range 1 6)))
-        )
-        // {
-          body = {
-            font-family = ["Raleway" "Helvetica" "Arial" "sans-serif"];
-            background = "#111111";
-            color = "#eeeeee";
-          };
-          pre = {
-            font-family = ["Iosevka Term" "Iosevka" "monospace"];
-            background = "#171A21";
-            color = "#eeeeee";
-          };
-          "a,a:hover" = {
-            color = "#ffd814";
-            text-decoration = "none";
-          };
-          "a:hover" = {
-            text-decoration = "underline";
-          };
-          "a.postheader,a.postheader:hover" = {
-            color = "#fc6711";
-          };
-          "a.pagelink,a.pagelink:hover" = {
-            color = "#ffd814";
-          };
-          "div.content" = {
-            margin-top = "5%";
-            margin-bottom = "5%";
-            margin-left = "20%";
-            margin-right = "25%";
-          };
-          "nav.sidebar" = {
-            position = "fixed";
-            margin-left = "3%";
-            padding-top = 0;
-            z-index = 1000;
-          };
-        }
-      ))
-      (media "max-width: 48em" {
-        "nav.sidebar" =
-          {
-            position = "relative";
-            margin-top = "5%";
-          }
-          // marginMobile;
-        "div.content" =
-          {
-            margin-top = 0;
-          }
-          // marginMobile;
-      })
-    ];
-in {
-  inherit stylesheets sidebarSection mkPage stylesheet;
+    mkPage = content:
+      with html; ''
+        <!DOCTYPE html>
+        ${html [
+          (head (stylesheets
+            ++ [
+              (title ctx.config.title)
+              (meta {
+                name = "viewport";
+                content = "width=device-width, initial-scale=1";
+              })
+            ]))
+          (body ''
+            ${script "0"}
+            ${sidebarSection}
+            ${div {class = "content";} content}
+          '')
+        ]}
+      '';
 
-  site =
-    site
-    // {
-      "index.html" = indexPage;
-      "posts"."index.html" = mkPage postsSectionContent;
-      "404.html" = mkPage (tags.h1 "No such page");
-      "site.css" = stylesheet;
-    }
-    // (mapAttrs (name: value: {"index.html" = mkPage value;}) pagesAndPosts)
-    // optionalAttrs (context ? resources) {inherit (context) resources;};
+    indexPage = mkPage (ctx.indexContent or postsSectionContent);
+
+    pagesAndPosts =
+      ctx.pages
+      // l.listToAttrs (
+        map (post: l.nameValuePair post.name (renderPost post)) ctx.posts
+      );
+
+    stylesheet = let
+      marginMobile = {
+        margin-left = "3%";
+        margin-right = "3%";
+      };
+    in
+      css [
+        (css (
+          (
+            l.mapAttrs'
+            (
+              name: value:
+                l.nameValuePair
+                value
+                {
+                  content = "\"${l.concatStrings (l.map (_: "#") (l.range 1 (l.toInt name)))} \"";
+                }
+            )
+            (
+              l.genAttrs
+              (n: "h${l.toString n}:before")
+              (l.map l.toString (l.range 1 6))
+            )
+          )
+          // {
+            body = {
+              font-family = ["Raleway" "Helvetica" "Arial" "sans-serif"];
+              background = "#111111";
+              color = "#eeeeee";
+            };
+            pre = {
+              font-family = ["Iosevka Term" "Iosevka" "monospace"];
+              background = "#171A21";
+              color = "#eeeeee";
+            };
+            "a,a:hover" = {
+              color = "#ffd814";
+              text-decoration = "none";
+            };
+            "a:hover" = {
+              text-decoration = "underline";
+            };
+            "a.postheader,a.postheader:hover" = {
+              color = "#fc6711";
+            };
+            "a.pagelink,a.pagelink:hover" = {
+              color = "#ffd814";
+            };
+            "div.content" = {
+              margin-top = "5%";
+              margin-bottom = "5%";
+              margin-left = "20%";
+              margin-right = "25%";
+            };
+            "nav.sidebar" = {
+              position = "fixed";
+              margin-left = "3%";
+              padding-top = 0;
+              z-index = 1000;
+            };
+          }
+        ))
+        (css.media "max-width: 48em" {
+          "nav.sidebar" =
+            {
+              position = "relative";
+              margin-top = "5%";
+            }
+            // marginMobile;
+          "div.content" =
+            {
+              margin-top = 0;
+            }
+            // marginMobile;
+        })
+      ];
+  in {
+    inherit stylesheets sidebarSection mkPage stylesheet;
+
+    site =
+      ctx.site
+      // {
+        "index.html" = indexPage;
+        "posts"."index.html" = mkPage postsSectionContent;
+        "404.html" = mkPage (html.h1 "No such page");
+        "site.css" = stylesheet;
+      }
+      // (l.mapAttrs (name: value: {"index.html" = mkPage value;}) pagesAndPosts)
+      // l.optionalAttrs (ctx ? resources) {inherit (ctx) resources;};
+  };
+in {
+  options = {
+    html-nix.lib.templaters.basic = l.mkOption {
+      type = t.functionTo t.attrs;
+    };
+  };
+  config = {
+    html-nix.lib.templaters.basic = func;
+  };
 }
