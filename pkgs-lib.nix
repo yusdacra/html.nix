@@ -94,49 +94,55 @@ in {
           postsRendered = let
             path = "${toString src}/posts";
           in
-            l.pipe (l.readDir path) [
-              (l.mapAttrsToList (
-                name: _: let
-                  __displayName = l.head (l.splitString "." name);
-                  _displayName = l.splitString "_" __displayName;
-                  id = l.replaceStrings [" "] ["_"] __displayName;
-                  date = l.head _displayName;
-                in {
-                  inherit id;
-                  displayName = l.last _displayName;
-                  date =
-                    if date == ""
-                    then null
-                    else date;
-                  content = l.readFile (parseMarkdown id (getPath path name));
-                }
-              ))
-              (l.sort (
-                p: op: let
-                  extractDate = date: l.splitString "-" date;
-                  getPart = date: el: l.removeSuffix "0" (l.elemAt (extractDate date) el);
-                  d = getPart p.date;
-                  od = getPart op.date;
-                in
-                  if p.date == null
-                  then false
-                  else if op.date == null
-                  then true
-                  else !(d 0 > od 0 && d 1 > od 1 && d 2 > od 2)
-              ))
-            ];
+            if l.pathExists postsRendered
+            then
+              l.pipe (l.readDir path) [
+                (l.mapAttrsToList (
+                  name: _: let
+                    __displayName = l.head (l.splitString "." name);
+                    _displayName = l.splitString "_" __displayName;
+                    id = l.replaceStrings [" "] ["_"] __displayName;
+                    date = l.head _displayName;
+                  in {
+                    inherit id;
+                    displayName = l.last _displayName;
+                    date =
+                      if date == ""
+                      then null
+                      else date;
+                    content = l.readFile (parseMarkdown id (getPath path name));
+                  }
+                ))
+                (l.sort (
+                  p: op: let
+                    extractDate = date: l.splitString "-" date;
+                    getPart = date: el: l.removeSuffix "0" (l.elemAt (extractDate date) el);
+                    d = getPart p.date;
+                    od = getPart op.date;
+                  in
+                    if p.date == null
+                    then false
+                    else if op.date == null
+                    then true
+                    else !(d 0 > od 0 && d 1 > od 1 && d 2 > od 2)
+                ))
+              ]
+            else [];
           pagesRendered = let
             path = "${toString src}/pages";
           in
-            l.mapAttrsToList
-            (
-              name: _: rec {
-                displayName = l.head (l.splitString "." name);
-                id = l.replaceStrings [" "] ["_"] displayName;
-                content = l.readFile (parseMarkdown id (getPath path name));
-              }
-            )
-            (l.readDir path);
+            if l.pathExists path
+            then
+              l.mapAttrsToList
+              (
+                name: _: rec {
+                  displayName = l.head (l.splitString "." name);
+                  id = l.replaceStrings [" "] ["_"] displayName;
+                  content = l.readFile (parseMarkdown id (getPath path name));
+                }
+              )
+              (l.readDir path)
+            else [];
           baseurl =
             if local
             then "http://localhost:8080"
