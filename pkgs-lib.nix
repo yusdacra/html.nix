@@ -91,6 +91,12 @@ in {
               name = l.strings.sanitizeDerivationName name;
               path = "${toString from}/${name}";
             };
+          indexRendered = let
+            path = "${toString src}/index.md";
+          in
+            if l.pathExists path
+            then l.readFile (parseMarkdown "index.html" path)
+            else null;
           postsRendered = let
             path = "${toString src}/posts";
           in
@@ -148,18 +154,22 @@ in {
             then "http://localhost:8080"
             else args.config.baseurl or (throw "Need baseurl");
 
-          context = {
-            inherit lib baseurl;
-            inherit (args) config;
-            posts = postsRendered;
-            pages = pagesRendered;
-            site = {
-              "robots.txt" = ''
-                User-agent: *
-                Allow: /
-              '';
+          context =
+            {
+              inherit lib baseurl;
+              inherit (args) config;
+              posts = postsRendered;
+              pages = pagesRendered;
+              site = {
+                "robots.txt" = ''
+                  User-agent: *
+                  Allow: /
+                '';
+              };
+            }
+            // l.optionalAttrs (indexRendered != null) {
+              indexContent = indexRendered;
             };
-          };
         in
           (templater context).site;
       };
