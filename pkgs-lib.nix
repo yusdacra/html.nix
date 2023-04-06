@@ -35,6 +35,9 @@ in {
             mkSitePathFrom = l.mkOption {
               type = l.types.raw;
             };
+            parseMarkdown = l.mkOption {
+              type = l.types.raw;
+            };
           };
         };
       });
@@ -74,6 +77,7 @@ in {
         '';
     in {
       html-nix.lib = {
+        inherit parseMarkdown;
         mkSitePathFrom = mkSitePath;
         mkServeFromSite = site: mkServePathScript (mkSitePath site);
         mkSiteFrom = {
