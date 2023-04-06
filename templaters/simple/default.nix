@@ -162,8 +162,7 @@
           }
         )
         (pagesRendered // postsRendered)
-      )
-      // l.optionalAttrs (ctx ? resources) {inherit (ctx) resources;};
+      );
   };
 in {
   options = {
