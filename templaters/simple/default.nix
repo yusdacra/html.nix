@@ -36,7 +36,7 @@
               (title titleStr)
               (l.optionalString (description != null) (meta {
                 name = "description";
-                content = ctx.config.description;
+                content = description;
               }))
               (meta {
                 name = "viewport";
