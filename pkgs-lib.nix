@@ -82,8 +82,13 @@ in {
           local ? false,
           config ? {},
         } @ args: let
+          getPath = from: name:
+            l.path {
+              name = l.strings.sanitizeDerivationName name;
+              path = "${toString from}/${name}";
+            };
           postsRendered = let
-            path = src + "/posts";
+            path = "${toString src}/posts";
           in
             l.pipe (l.readDir path) [
               (l.mapAttrsToList (
@@ -99,7 +104,7 @@ in {
                     if date == ""
                     then null
                     else date;
-                  content = l.readFile (parseMarkdown id (path + "/${name}"));
+                  content = l.readFile (parseMarkdown id (getPath path name));
                 }
               ))
               (l.sort (
@@ -117,14 +122,14 @@ in {
               ))
             ];
           pagesRendered = let
-            path = src + "/pages";
+            path = "${toString src}/pages";
           in
             l.mapAttrsToList
             (
               name: _: rec {
                 displayName = l.head (l.splitString "." name);
                 id = l.replaceStrings [" "] ["_"] displayName;
-                content = l.readFile (parseMarkdown id (path + "/${name}"));
+                content = l.readFile (parseMarkdown id (getPath path name));
               }
             )
             (l.readDir path);
