@@ -29,7 +29,7 @@
     }:
       with html; ''
         <!DOCTYPE html>
-        ${html.html [
+        ${html.html {lang = ctx.config.siteLang or "en";} [
           (head (stylesheets
             ++ [
               (title titleStr)
@@ -37,6 +37,10 @@
                 name = "viewport";
                 content = "width=device-width, initial-scale=1";
               })
+              (l.optionalString (ctx.config ? iconPath) (link {
+                rel = "icon";
+                href = "${ctx.baseurl}/${iconPath}";
+              }))
             ]))
           (body ''
             ${script "0"}
