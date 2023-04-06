@@ -94,7 +94,7 @@ in {
           indexRendered = let
             path = getPath src "index.md";
           in
-            if l.pathExists path
+            if l.pathExists "${toString src}/index.md"
             then l.readFile (parseMarkdown "index.html" path)
             else null;
           postsRendered = let

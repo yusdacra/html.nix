@@ -31,7 +31,9 @@
       with html; ''
         <!DOCTYPE html>
         ${html.html {lang = ctx.config.siteLang or "en";} [
-          (head (stylesheets
+          (head (
+            [(meta {charset = "UTF-8";})]
+            ++ stylesheets
             ++ [
               (title titleStr)
               (l.optionalString (description != null) (meta {
