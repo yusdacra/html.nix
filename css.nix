@@ -34,7 +34,7 @@
 in {
   options = {
     html-nix.lib.css = l.mkOption {
-      type = t.functionTo t.str;
+      type = t.raw;
     };
   };
   config = {

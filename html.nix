@@ -19,13 +19,13 @@
   noChildrenTag = name: attrs: "<${name} ${evalAttrs attrs}>";
 
   tagsToGen =
-    (l.map (n: "h${toString n}") (l.range 1 6))
+    (l.map (n: "h${l.toString n}") (l.range 1 6))
     ++ ["ul" "li" "html" "head" "body" "div" "p"]
     ++ ["a" "title" "code" "pre" "nav" "article" "script"];
-  tags = l.genAttrs tag tagsToGen;
+  tags = l.genAttrs tagsToGen tag;
 
-  noChildrenTagsToGen = ["link" "meta"];
-  noChildrenTags = l.genAttrs noChildrenTag noChildrenTagsToGen;
+  noChildrenTagsToGen = ["link" "meta" "hr"];
+  noChildrenTags = l.genAttrs noChildrenTagsToGen noChildrenTag;
 in {
   options = {
     html-nix.lib.html = l.mkOption {

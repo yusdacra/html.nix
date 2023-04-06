@@ -4,17 +4,37 @@
   ...
 }: let
   l = lib // builtins;
+  recursiveAttrPaths = set: let
+    flattenIfHasList = x:
+      if (l.isList x) && (l.any l.isList x)
+      then l.concatMap flattenIfHasList x
+      else [x];
+
+    recurse = path: set: let
+      g = name: value:
+        if l.isAttrs value
+        then recurse (path ++ [name]) value
+        else path ++ [name];
+    in
+      l.mapAttrsToList g set;
+  in
+    flattenIfHasList (recurse [] set);
 in {
   options = {
     perSystem =
       flake-parts-lib.mkPerSystemOption
       ({...}: {
-        html-nix.lib = {
-          mkServeFromSite = l.mkOption {
-            type = with l.types; functionTo package;
-          };
-          mkSiteFrom = l.mkOption {
-            type = with l.types; functionTo attrs;
+        options = {
+          html-nix.lib = {
+            mkServeFromSite = l.mkOption {
+              type = with l.types; functionTo package;
+            };
+            mkSiteFrom = l.mkOption {
+              type = with l.types; functionTo attrs;
+            };
+            mkSitePathFrom = l.mkOption {
+              type = l.types.raw;
+            };
           };
         };
       });
@@ -33,7 +53,7 @@ in {
           if builtins.isPath value
           then value
           else pkgs.writeText (l.concatStringsSep "-" path) value;
-        fileAttrPaths = l.recursiveAttrPaths site;
+        fileAttrPaths = recursiveAttrPaths site;
         texts = l.mapAttrsRecursive convertToPath site;
         mkCreateFileCmd = path: value: let
           p = l.concatStringsSep "/" (l.init path);
@@ -54,6 +74,7 @@ in {
         '';
     in {
       html-nix.lib = {
+        mkSitePathFrom = mkSitePath;
         mkServeFromSite = site: mkServePathScript (mkSitePath site);
         mkSiteFrom = {
           src,
@@ -65,17 +86,23 @@ in {
           in
             l.pipe (l.readDir path) [
               (l.mapAttrsToList (
-                name: _:
-                  l.nameValuePair
-                  (l.head (l.splitString "." name))
-                  (l.readFile (parseMarkdown name (l.readFile (path + "/${name}"))))
+                name: _: let
+                  __displayName = l.head (l.splitString "." name);
+                  _displayName = l.splitString "_" __displayName;
+                  id = l.replaceStrings [" "] ["_"] __displayName;
+                in {
+                  inherit id;
+                  displayName = l.last _displayName;
+                  date = l.head _displayName;
+                  content = l.readFile (parseMarkdown id (l.readFile (path + "/${name}")));
+                }
               ))
               (l.sort (
                 p: op: let
-                  extractDate = name: l.splitString "-" (l.head (l.splitString "_" name));
-                  getPart = name: el: l.removeSuffix "0" (l.elemAt (extractDate name) el);
-                  d = getPart p.name;
-                  od = getPart op.name;
+                  extractDate = date: l.splitString "-" date;
+                  getPart = date: el: l.removeSuffix "0" (l.elemAt (extractDate date) el);
+                  d = getPart p.date;
+                  od = getPart op.date;
                 in
                   !(((d 0) > (od 0)) && ((d 1) > (od 1)) && ((d 2) > (od 2)))
               ))
@@ -83,12 +110,13 @@ in {
           pagesRendered = let
             path = src + "/pages";
           in
-            l.mapAttrs'
+            l.mapAttrsToList
             (
-              name: _:
-                l.nameValuePair
-                (l.head (l.splitString "." name))
-                (l.readFile (parseMarkdown name (l.readFile (path + "/${name}"))))
+              name: _: rec {
+                displayName = l.head (l.splitString "." name);
+                id = l.replaceStrings [" "] ["_"] displayName;
+                content = l.readFile (parseMarkdown id (l.readFile (path + "/${name}")));
+              }
             )
             (l.readDir path);
           siteConfig = l.fromTOML (l.readFile (src + "/config.toml"));

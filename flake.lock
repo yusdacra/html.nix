@@ -1,21 +1,5 @@
 {
   "nodes": {
-    "examples": {
-      "inputs": {
-        "nixpkgs": "nixpkgs",
-        "parts": "parts"
-      },
-      "locked": {
-        "lastModified": 1,
-        "narHash": "sha256-agjsV0F6nVUimGUciKlOSF35XvTOQKKEez0xZ8X0JBI=",
-        "path": "./examples",
-        "type": "path"
-      },
-      "original": {
-        "path": "./examples",
-        "type": "path"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1680668850,
@@ -50,40 +34,6 @@
         "type": "github"
       }
     },
-    "nixpkgs-lib_2": {
-      "locked": {
-        "dir": "lib",
-        "lastModified": 1680213900,
-        "narHash": "sha256-cIDr5WZIj3EkKyCgj/6j3HBH4Jj1W296z7HTcWj1aMA=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "e3652e0735fbec227f342712f180f4f21f0594f2",
-        "type": "github"
-      },
-      "original": {
-        "dir": "lib",
-        "owner": "NixOS",
-        "ref": "nixos-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "nixpkgs_2": {
-      "locked": {
-        "lastModified": 1680668850,
-        "narHash": "sha256-mQMg13yRsS0LXVzaeoSPwqgPO6yhkGzGewPgMSqXSv8=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "4a65e9f64e53fdca6eed31adba836717a11247d2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
     "parts": {
       "inputs": {
         "nixpkgs-lib": "nixpkgs-lib"
@@ -102,29 +52,10 @@
         "type": "github"
       }
     },
-    "parts_2": {
-      "inputs": {
-        "nixpkgs-lib": "nixpkgs-lib_2"
-      },
-      "locked": {
-        "lastModified": 1680392223,
-        "narHash": "sha256-n3g7QFr85lDODKt250rkZj2IFS3i4/8HBU2yKHO3tqw=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "dcc36e45d054d7bb554c9cdab69093debd91a0b5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
-        "examples": "examples",
-        "nixpkgs": "nixpkgs_2",
-        "parts": "parts_2"
+        "nixpkgs": "nixpkgs",
+        "parts": "parts"
       }
     }
   },

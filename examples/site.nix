@@ -1,9 +1,9 @@
-{
+topArgs: {
   perSystem = {config, ...}: let
-    html-nix = config.html-nix;
+    html-nix = config.html-nix.lib;
     siteServe = html-nix.mkServeFromSite (html-nix.mkSiteFrom {
       src = ./site;
-      templater = html-nix.lib.templaters.basic;
+      templater = topArgs.config.html-nix.lib.templaters.simple;
       local = true;
     });
   in {

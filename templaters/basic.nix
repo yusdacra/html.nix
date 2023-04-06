@@ -54,7 +54,7 @@
               class = "pagelink";
             }
             name))
-        (l.mapAttrsToList (name: _: name) pages))
+        (l.mapAttrsToList (name: _: name) ctx.pages))
       ++ [
         (div {class = "pure-u-1";} (a {
           href = "${ctx.baseurl}/posts/";
@@ -63,7 +63,7 @@
       ];
 
     postsLinks = with html;
-      singleton
+      l.singleton
       (ul (
         l.map
         (
@@ -73,7 +73,7 @@
               (parsePostName post.name).formatted
             )
         )
-        posts
+        ctx.posts
       ));
 
     postsSectionContent = with html;
@@ -95,7 +95,7 @@
     mkPage = content:
       with html; ''
         <!DOCTYPE html>
-        ${html [
+        ${html.html [
           (head (stylesheets
             ++ [
               (title ctx.config.title)
@@ -140,8 +140,8 @@
             )
             (
               l.genAttrs
-              (n: "h${l.toString n}:before")
               (l.map l.toString (l.range 1 6))
+              (n: "h${l.toString n}:before")
             )
           )
           // {
