@@ -140,6 +140,7 @@
 
     indexPage = mkPage {
       content = ctx.indexContent or postsSectionContent;
+      description = ctx.config.descriptionsById."index" or null;
     };
   in {
     inherit ctx stylesheets mkPage stylesheet postsSectionContent;
@@ -151,10 +152,12 @@
         "posts"."index.html" = mkPage {
           content = postsSectionContent;
           titleStr = "posts - ${ctx.config.title}";
+          description = ctx.config.descriptionsById."posts" or null;
         };
         "404.html" = mkPage {
           content = html.h1 {class = "nohashtag";} "404 - page not found";
           titleStr = "page not found - ${ctx.config.title}";
+          description = ctx.config.descriptionsById."404" or null;
         };
         "site.css" = stylesheet;
       }
