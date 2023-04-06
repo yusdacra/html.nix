@@ -117,6 +117,7 @@ in {
                       then null
                       else date;
                     content = l.readFile (parseMarkdown id (getPath path name));
+                    description = args.config.descriptionsById.${id} or null;
                   }
                 ))
                 (l.sort (
@@ -145,6 +146,7 @@ in {
                   displayName = l.head (l.splitString "." name);
                   id = l.replaceStrings [" "] ["_"] displayName;
                   content = l.readFile (parseMarkdown id (getPath path name));
+                  description = args.config.descriptionsById.${id} or null;
                 }
               )
               (l.readDir path)

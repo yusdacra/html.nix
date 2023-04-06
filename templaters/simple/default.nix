@@ -26,6 +26,7 @@
     mkPage = {
       content,
       titleStr ? ctx.config.title,
+      description ? null,
     }:
       with html; ''
         <!DOCTYPE html>
@@ -33,6 +34,10 @@
           (head (stylesheets
             ++ [
               (title titleStr)
+              (l.optionalString (description != null) (meta {
+                name = "description";
+                content = ctx.config.description;
+              }))
               (meta {
                 name = "viewport";
                 content = "width=device-width, initial-scale=1";
@@ -118,6 +123,7 @@
         l.nameValuePair post.id {
           content = renderPost post;
           name = post.displayName;
+          description = post.description;
         })
       ctx.posts
     );
@@ -127,6 +133,7 @@
         l.nameValuePair page.id {
           content = page.content;
           name = page.displayName;
+          description = page.description;
         })
       ctx.pages
     );
@@ -156,7 +163,7 @@
         (
           name: value: {
             "index.html" = mkPage {
-              content = value.content;
+              inherit (value) content description;
               titleStr = "${value.name} - ${ctx.config.title}";
             };
           }
