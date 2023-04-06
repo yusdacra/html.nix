@@ -57,6 +57,13 @@
             class = "novisited";
           } "home")
         ]
+        ++ l.optionals (l.length ctx.posts > 0) [
+          " "
+          (a {
+            href = "${ctx.baseurl}/posts";
+            class = "novisited";
+          } "posts")
+        ]
         ++ (
           l.map
           (
