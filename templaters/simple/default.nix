@@ -39,7 +39,7 @@
               })
               (l.optionalString (ctx.config ? iconPath) (link {
                 rel = "icon";
-                href = "${ctx.baseurl}/${iconPath}";
+                href = "${ctx.baseurl}/${ctx.config.iconPath}";
               }))
             ]))
           (body ''
