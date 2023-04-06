@@ -51,6 +51,7 @@ in
         background = colors.light.bg;
         max-width = "650px";
         margin = "40px auto";
+        padding = "0 10px";
       };
       "pre,code" = {
         font-family = ["monospace"];
