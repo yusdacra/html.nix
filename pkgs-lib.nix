@@ -92,7 +92,7 @@ in {
               path = "${toString from}/${name}";
             };
           indexRendered = let
-            path = "${toString src}/index.md";
+            path = getPath src "index.md";
           in
             if l.pathExists path
             then l.readFile (parseMarkdown "index.html" path)
