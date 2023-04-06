@@ -68,9 +68,9 @@ in {
           ${l.concatStringsSep "\n" createFileCmds}
         '';
 
-      parseMarkdown = name: contents:
+      parseMarkdown = name: path:
         pkgs.runCommandLocal name {} ''
-          printf ${l.escapeShellArg contents} | ${pkgBin "pandoc"} -f gfm > $out
+          ${pkgBin "pandoc"} ${path} -f gfm -o $out
         '';
     in {
       html-nix.lib = {
@@ -80,7 +80,8 @@ in {
           src,
           templater,
           local ? false,
-        }: let
+          config ? {},
+        } @ args: let
           postsRendered = let
             path = src + "/posts";
           in
@@ -98,7 +99,7 @@ in {
                     if date == ""
                     then null
                     else date;
-                  content = l.readFile (parseMarkdown id (l.readFile (path + "/${name}")));
+                  content = l.readFile (parseMarkdown id (path + "/${name}"));
                 }
               ))
               (l.sort (
@@ -123,19 +124,18 @@ in {
               name: _: rec {
                 displayName = l.head (l.splitString "." name);
                 id = l.replaceStrings [" "] ["_"] displayName;
-                content = l.readFile (parseMarkdown id (l.readFile (path + "/${name}")));
+                content = l.readFile (parseMarkdown id (path + "/${name}"));
               }
             )
             (l.readDir path);
-          siteConfig = l.fromTOML (l.readFile (src + "/config.toml"));
           baseurl =
             if local
             then "http://localhost:8080"
-            else siteConfig.baseurl or (throw "Need baseurl");
+            else args.config.baseurl or (throw "Need baseurl");
 
           context = {
             inherit lib baseurl;
-            config = siteConfig;
+            inherit (args) config;
             posts = postsRendered;
             pages = pagesRendered;
             site = {
