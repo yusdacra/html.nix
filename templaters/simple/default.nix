@@ -124,7 +124,7 @@
       content = ctx.indexContent or postsSectionContent;
     };
   in {
-    inherit stylesheets mkPage stylesheet;
+    inherit ctx stylesheets mkPage stylesheet postsSectionContent;
 
     site =
       ctx.site
@@ -135,7 +135,7 @@
           titleStr = "posts - ${ctx.config.title}";
         };
         "404.html" = mkPage {
-          content = html.h1 {class = "nohashtag";} "page not found";
+          content = html.h1 {class = "nohashtag";} "404 - page not found";
           titleStr = "page not found - ${ctx.config.title}";
         };
         "site.css" = stylesheet;
