@@ -94,7 +94,7 @@ in {
           postsRendered = let
             path = "${toString src}/posts";
           in
-            if l.pathExists postsRendered
+            if l.pathExists path
             then
               l.pipe (l.readDir path) [
                 (l.mapAttrsToList (
