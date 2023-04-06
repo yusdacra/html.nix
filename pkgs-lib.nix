@@ -90,10 +90,14 @@ in {
                   __displayName = l.head (l.splitString "." name);
                   _displayName = l.splitString "_" __displayName;
                   id = l.replaceStrings [" "] ["_"] __displayName;
+                  date = l.head _displayName;
                 in {
                   inherit id;
                   displayName = l.last _displayName;
-                  date = l.head _displayName;
+                  date =
+                    if date == ""
+                    then null
+                    else date;
                   content = l.readFile (parseMarkdown id (l.readFile (path + "/${name}")));
                 }
               ))
@@ -104,7 +108,11 @@ in {
                   d = getPart p.date;
                   od = getPart op.date;
                 in
-                  !(((d 0) > (od 0)) && ((d 1) > (od 1)) && ((d 2) > (od 2)))
+                  if p.date == null
+                  then false
+                  else if op.date == null
+                  then true
+                  else !(d 0 > od 0 && d 1 > od 1 && d 2 > od 2)
               ))
             ];
           pagesRendered = let

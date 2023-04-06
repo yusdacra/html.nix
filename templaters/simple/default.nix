@@ -15,7 +15,11 @@
       with html;
         article [
           (h1 {inherit (post) id;} post.displayName)
-          (h4 {class = "nohashtag";} ("date: " + post.date))
+          (
+            l.optionalString
+            (post.date != null)
+            (h4 {class = "nohashtag";} ("date: " + post.date))
+          )
           post.content
         ];
 
@@ -70,21 +74,32 @@
         )
       );
 
-    postsLinks = with html;
-      l.singleton
-      (ul (
-        l.map
-        (
-          post:
-            li (
-              a {href = "${ctx.baseurl}/${post.id}";}
-              "${post.date} - ${post.displayName}"
-            )
-        )
-        ctx.posts
-      ));
+    mkPostsLinks = posts:
+      with html;
+        l.singleton
+        (ul (
+          l.map
+          (
+            post:
+              li (
+                a {href = "${ctx.baseurl}/${post.id}";}
+                (
+                  if post.date != null
+                  then "${post.date} - ${post.displayName}"
+                  else post.displayName
+                )
+              )
+          )
+          posts
+        ));
+    postsLinksWithDate = mkPostsLinks (l.filter (p: p.date != null) ctx.posts);
+    postsLinksWithoutDate = mkPostsLinks (l.filter (p: p.date == null) ctx.posts);
 
-    postsSectionContent = [(html.h1 "posts")] ++ postsLinks;
+    postsSectionContent =
+      [(html.h1 "posts")]
+      ++ postsLinksWithDate
+      ++ [(html.h2 "miscellaneous")]
+      ++ postsLinksWithoutDate;
 
     postsRendered = l.listToAttrs (
       l.map
