@@ -55,6 +55,7 @@
               navBar
               (hr {})
               content
+              (ctx.config.footerContent or [])
             ])}
           '')
         ]}
